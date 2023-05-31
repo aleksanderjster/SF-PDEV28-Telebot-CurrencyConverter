@@ -55,7 +55,7 @@ class CurrencyConverter:
 
 class Converter:
     @staticmethod
-    def get_amount_to_sell(currency_converter: CurrencyConverter,
+    def get_price(currency_converter: CurrencyConverter,
                            curr_buy: str,
                            curr_sell: str,
                            amount_to_buy: str):
@@ -104,6 +104,11 @@ def telegram_bot():
                               f'or other currency codes can be used from follow list:\n'
                               f'{", ".join(list(currency_codes))}\n')
 
+    @bot.message_handler(commands=['values'])
+    def start_message(message: telebot.types.Message):
+        currency_codes = currency_converter.currency_rates.keys()
+        bot.reply_to(message, f'{", ".join(list(currency_codes))}')
+
     @bot.message_handler(content_types=['text'])
     def treat_message(message: telebot.types.Message):
         try:
@@ -112,7 +117,7 @@ def telegram_bot():
             except ValueError:
                 raise ConversionException('Wrong amount of input parameters. 3 parameters needed.\n')
 
-            amount_to_sell = Converter.get_amount_to_sell(currency_converter, curr_buy, curr_sell, amount_to_buy)
+            amount_to_sell = Converter.get_price(currency_converter, curr_buy, curr_sell, amount_to_buy)
             curr_buy = currency_converter.get_currency_ticker(curr_buy)
             curr_sell = currency_converter.get_currency_ticker(curr_sell)
             bot.reply_to(message, f'{amount_to_buy} {curr_buy} = {amount_to_sell} {curr_sell}')
